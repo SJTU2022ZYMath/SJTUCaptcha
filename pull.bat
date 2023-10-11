@@ -5,5 +5,5 @@ color 0F
 git pull
 if %errorlevel% neq 0 goto pull
 :push
-echo ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½
+echo ¡ª¡ª¡ª¡ªÀ­È¡Íê³É£¡¡ª¡ª¡ª¡ª
 pause
