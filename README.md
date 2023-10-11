@@ -1,0 +1,2 @@
+# SJTUCaptcha
+SJTU idot captcha
