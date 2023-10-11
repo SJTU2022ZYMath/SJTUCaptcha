@@ -1,4 +1,3 @@
-
 import torch
 
 
@@ -34,7 +33,7 @@ class BasicBlock(torch.nn.Module):
                 For CIFAR10 ResNet paper uses option A.
                 """
                 self.shortcut = LambdaLayer(lambda x:
-                                            F.pad(x[:, :, ::2, ::2], (0, 0, 0, 0, planes // 4, planes // 4), "constant",
+                                            torch.nn.functional.pad(x[:, :, ::2, ::2], (0, 0, 0, 0, planes // 4, planes // 4), "constant",
                                                   0))
             elif option == 'B':
                 self.shortcut = torch.nn.Sequential(
@@ -44,10 +43,10 @@ class BasicBlock(torch.nn.Module):
                 )
 
     def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
+        out = torch.nn.functional.relu(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
         out += self.shortcut(x)
-        out = F.relu(out)
+        out = torch.nn.functional.relu(out)
         return out
 
 class ResNet(torch.nn.Module):
@@ -79,12 +78,12 @@ class ResNet(torch.nn.Module):
         return torch.nn.Sequential(*layers)
 
     def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
+        out = torch.nn.functional.relu(self.bn1(self.conv1(x)))
         out = self.layer1(out)
         out = self.layer2(out)
         out = self.layer3(out)
-        # out = F.avg_pool2d(out, out.size()[2:])
-        out = F.avg_pool2d(out, (10, 25), stride=(10, 25))
+        # out = torch.nn.functional.avg_pool2d(out, out.size()[2:])
+        out = torch.nn.functional.avg_pool2d(out, (10, 25), stride=(10, 25))
         out = out.view(out.size(0), -1)
         out1 = self.linear1(out)
         out2 = self.linear2(out)
@@ -112,7 +111,6 @@ import torchvision.transforms as transforms
 from PIL import Image
 from torch.utils.data import Dataset, random_split, DataLoader
 
-from nn_models import resnet20
 
 # Train config
 USE_CUDA = False
