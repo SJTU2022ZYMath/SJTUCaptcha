@@ -1,22 +1,22 @@
-ï»¿::encoding: utf8
+::encoding: gbk
 @echo off
-chcp 65001
+::chcp 65001
 color 0F
-echo â€”â€”â€”â€”è¯·å…ˆä½¿ç”¨pull.batåˆå¹¶â€”â€”â€”â€”
-set /p input=æ˜¯å¦æ‹‰å–æ£€æŸ¥åˆå¹¶ï¼Ÿ(yï¼šæ£€æŸ¥)
+echo ¡ª¡ª¡ª¡ªÇëÏÈÊ¹ÓÃpull.batºÏ²¢¡ª¡ª¡ª¡ª
+set /p input="ÊÇ·ñÀ­È¡¼ì²éºÏ²¢£¿£¨y£º¼ì²é£¬n£º²»¼ì²é£©"
 if %input% == y call pull.bat
 :pull
 git pull
 set error=%errorlevel%
-if %error% neq 0 echo é”™è¯¯ä»£ç ï¼š%error%
+if %error% neq 0 echo ´íÎó´úÂë£º%error%
 if %error% neq 0 echo.
 if %error% neq 0 goto pull
-echo â€”â€”â€”â€”æ‹‰å–å®Œæˆï¼åˆå¹¶ä¸­â€¦â€¦â€”â€”â€”â€”
+echo ¡ª¡ª¡ª¡ªÀ­È¡Íê³É£¡ºÏ²¢ÖĞ¡­¡­¡ª¡ª¡ª¡ª
 :push
 git push
 set error=%errorlevel%
-if %error% neq 0 echo é”™è¯¯ä»£ç ï¼š%error%
+if %error% neq 0 echo ´íÎó´úÂë£º%error%
 if %error% neq 0 echo.
 if %error% neq 0 goto push
-echo â€”â€”â€”â€”æ‹‰å–å®Œæˆï¼æŒ‰ä»»æ„é”®é€€å‡ºâ€”â€”â€”â€”
+echo ¡ª¡ª¡ª¡ªÀ­È¡Íê³É£¡°´ÈÎÒâ¼üÍË³ö¡ª¡ª¡ª¡ª
 pause
