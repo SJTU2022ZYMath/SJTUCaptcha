@@ -1,12 +1,12 @@
 ::encoding: gbk
 @echo off
-color F0
+color 0F
 :pull
 git pull
 if %errorlevel% neq 0 goto pull
 :push
-echo ÒÑÍê³ÉÀ­È¡£¡
+echo ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½
 git push
 if %errorlevel% neq 0 goto push
-echo ÒÑÍê³É£¡
+echo ï¿½ï¿½ï¿½ï¿½É£ï¿½
 pause

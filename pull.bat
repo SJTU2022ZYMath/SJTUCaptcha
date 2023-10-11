@@ -1,6 +1,6 @@
 ::encoding: gbk
 @echo off
-color F0
+color 0F
 :pull
 git pull
 if %errorlevel% neq 0 goto pull
