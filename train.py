@@ -1,13 +1,9 @@
 import os
-from os import listdir, path
-from shutil import copyfile
+import shutil  # shutil.copyfile
 
 import torch
-import torch.nn as nn
-import torch.optim as optim
-import torchvision.transforms as transforms
-from PIL import Image
-from torch.utils.data import DataLoader, Dataset, random_split
+import torchvision.transforms
+import PIL.Image
 
 
 def _weights_init(m):
@@ -143,13 +139,13 @@ batch_size = 640  # 每次训练同时使用的数据条数。根据显卡内存
 # Also check CHECKPOINT SETTINGS below.
 
 
-class CaptchaSet(Dataset):
+class CaptchaSet(torch.utils.data.Dataset):
     def __init__(self, root, transform):
         self._table = [0] * 156 + [1] * 100
         self.transform = transform
 
         self.root = root
-        self.imgs = listdir(root)
+        self.imgs = os.listdir(root)
 
     @staticmethod
     def _get_label_from_fn(fn):
@@ -160,7 +156,7 @@ class CaptchaSet(Dataset):
         return labels
 
     def __getitem__(self, idx):
-        img = Image.open(path.join(self.root, self.imgs[idx])).convert("L")
+        img = PIL.Image.open(os.path.join(self.root, self.imgs[idx])).convert("L")
         img = img.point(self._table, "1")
 
         label = CaptchaSet._get_label_from_fn(self.imgs[idx])
@@ -190,14 +186,16 @@ def transfer_to_device(x):
 
 # Data pre-processing
 print("==> Preparing data..")
-transform = transforms.ToTensor()
+transform = torchvision.transforms.ToTensor()
 
 dataset = CaptchaSet(root="labelled", transform=transform)
 test_count = int(len(dataset) * TEST_FACTOR)
 train_count = len(dataset) - test_count
-train_set, test_set = random_split(dataset, [train_count, test_count])
-train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
-test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=True)
+train_set, test_set = torch.utils.data.random_split(dataset, [train_count, test_count])
+train_loader = torch.utils.data.DataLoader(
+    train_set, batch_size=batch_size, shuffle=True
+)
+test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=True)
 
 # Model
 print("==> Building model..")
@@ -345,4 +343,4 @@ for epoch in range(start_epoch, end_epoch + 1):
     # Scheduler step
     scheduler.step(train_loss)
 
-copyfile(ckpt_file, "./ckpt.pth")
+shutil.copyfile(ckpt_file, "./ckpt.pth")
