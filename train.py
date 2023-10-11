@@ -130,16 +130,16 @@ def resnet20():
 
 
 # 以下是训练代码
-import os
-from os import listdir, path
-from shutil import copyfile
+# import os
+# from os import listdir, path
+# from shutil import copyfile
 
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torchvision.transforms as transforms
-from PIL import Image
-from torch.utils.data import Dataset, random_split, DataLoader
+# import torch
+# import torch.nn as nn
+# import torch.optim as optim
+# import torchvision.transforms as transforms
+# from PIL import Image
+# from torch.utils.data import Dataset, random_split, DataLoader
 
 
 # Train config
@@ -221,9 +221,9 @@ print("==> Building model..")
 model = resnet20()  # 使用 resnet20 函数初始化 ResNet 模型。设置了优化器（Adam）和学习率调度器
 model = transfer_to_device(model)
 
-optimizer = optim.Adam(model.parameters(), lr=lr)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=3)
-criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=3)
+criterion = torch.nn.CrossEntropyLoss()
 criterion = transfer_to_device(criterion)
 
 # CHECKPOINT SETTINGS
