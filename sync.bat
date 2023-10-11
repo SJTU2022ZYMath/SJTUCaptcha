@@ -4,7 +4,7 @@
 color 0F
 echo ————请先使用pull.bat合并————
 set /p input="是否拉取检查合并？（y：检查，n：不检查）"
-if %input% == y call pull.bat
+if /i %input% == y call pull.bat
 :pull
 git pull
 set error=%errorlevel%
