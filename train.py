@@ -135,10 +135,10 @@ USE_CUDA = False  # 是否使用英伟达®CUDA架构 GPU训练
 USE_MPS = False  # 是否使用 Apple Silicon 芯片
 TEST_FACTOR = 0.2
 # Hyper parameters
-start_epoch = 0
-end_epoch = 75
+start_epoch = 0  # 起始轮数
+end_epoch = 75  # 结束轮数
 lr = 0.01
-batch_size = 640  # You may adjust this according to your graphics memory. Don't forget to adjust lr.
+batch_size = 640  # 每次训练同时使用的数据条数。根据显卡内存调整这个值。记得相应调整lr。
 
 
 # Also check CHECKPOINT SETTINGS below.
