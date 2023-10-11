@@ -4,8 +4,8 @@ color F0
 git pull
 if %errorlevel% neq 0 goto pull
 :push
-echo 宸插畬鎴愭媺鍙栵紒
+echo 已完成拉取！
 git push
 if %errorlevel% neq 0 goto push
-echo 宸插畬鎴愶紒
+echo 已完成！
 pause
