@@ -9,9 +9,10 @@ import PIL.Image
 def _weights_init(m):
     if isinstance(m, torch.nn.Linear) or isinstance(m, torch.nn.Conv2d):
         torch.nn.init.kaiming_normal_(m.weight)
+        #这个函数 _weights_init 用于使用 Kaiming 正态初始化来初始化线性层和卷积层的权重。
 
 
-class LambdaLayer(torch.nn.Module):
+class LambdaLayer(torch.nn.Module): #LambdaLayer 是一个 PyTorch 模块，表示一个 Lambda 层。在这个实现中，它用于残差块中的填充。
     def __init__(self, lambd):
         super(LambdaLayer, self).__init__()
         self.lambd = lambd
@@ -20,7 +21,7 @@ class LambdaLayer(torch.nn.Module):
         return self.lambd(x)
 
 
-class BasicBlock(torch.nn.Module):
+class BasicBlock(torch.nn.Module): #BasicBlock 是 ResNet 模型的基本构建块。它包括两个卷积层和一个快捷连接。快捷连接有助于训练更深的网络。
     expansion = 1
 
     def __init__(self, in_planes, planes, stride=1, option="A"):
@@ -68,7 +69,7 @@ class BasicBlock(torch.nn.Module):
         return out
 
 
-class ResNet(torch.nn.Module):
+class ResNet(torch.nn.Module): #ResNet 是主要的残差网络（ResNet）类，它使用 BasicBlock 构建块定义整体架构
     def __init__(self, block, num_blocks):
         super(ResNet, self).__init__()
         self.in_planes = 16
@@ -119,10 +120,20 @@ class ResNet(torch.nn.Module):
 
 
 def resnet20():
-    return ResNet(BasicBlock, [3, 3, 3])
+    return ResNet(BasicBlock, [3, 3, 3]) #resnet20 是一个辅助函数，用于创建一个带有指定数量块的 ResNet-20 模型。
 
 
 # 以下是训练代码
+import os
+from os import listdir, path
+from shutil import copyfile
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torchvision.transforms as transforms
+from PIL import Image
+from torch.utils.data import Dataset, random_split, DataLoader
 
 
 # Train config
@@ -139,7 +150,7 @@ batch_size = 640  # 每次训练同时使用的数据条数。根据显卡内存
 # Also check CHECKPOINT SETTINGS below.
 
 
-class CaptchaSet(torch.utils.data.Dataset):
+class CaptchaSet(torch.utils.data.Dataset): #CaptchaSet 是一个自定义 PyTorch 数据集类，用于加载和预处理验证码数据集。
     def __init__(self, root, transform):
         self._table = [0] * 156 + [1] * 100
         self.transform = transform
@@ -186,7 +197,7 @@ def transfer_to_device(x):
 
 # Data pre-processing
 print("==> Preparing data..")
-transform = torchvision.transforms.ToTensor()
+transform = torchvision.transforms.ToTensor() #定义了诸如将图像转换为张量等转换。数据集被分成训练集和测试集。
 
 dataset = CaptchaSet(root="labelled", transform=transform)
 test_count = int(len(dataset) * TEST_FACTOR)
@@ -194,12 +205,12 @@ train_count = len(dataset) - test_count
 train_set, test_set = torch.utils.data.random_split(dataset, [train_count, test_count])
 train_loader = torch.utils.data.DataLoader(
     train_set, batch_size=batch_size, shuffle=True
-)
+) #创建了数据加载器，以指定的批量大小遍历训练和测试集
 test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=True)
 
 # Model
 print("==> Building model..")
-model = resnet20()
+model = resnet20()   #使用 resnet20 函数初始化 ResNet 模型。设置了优化器（Adam）和学习率调度器
 model = transfer_to_device(model)
 
 optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -330,7 +341,7 @@ def test(epoch):
     }
     if not os.path.isdir("checkpoint"):
         os.mkdir("checkpoint")
-    torch.save(state, "./checkpoint/ckpt_%d_acc_%f.pth" % (epoch, acc))
+    torch.save(state, "./checkpoint/ckpt_%d_acc_%f.pth" % (epoch, acc)) #保存模型检查点，包括模型状态、优化器状态、epoch 和准确率。
 
     return "./checkpoint/ckpt_%d_acc_%f.pth" % (epoch, acc)
 
