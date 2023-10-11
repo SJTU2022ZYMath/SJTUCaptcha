@@ -1,3 +1,4 @@
+::encoding: gbk
 @echo off
 color F0
 :pull
