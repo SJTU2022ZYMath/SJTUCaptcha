@@ -5,6 +5,7 @@ def _weights_init(m):
     if isinstance(m, torch.nn.Linear) or isinstance(m, torch.nn.Conv2d):
         torch.nn.init.kaiming_normal_(m.weight)
 
+
 class LambdaLayer(torch.nn.Module):
     def __init__(self, lambd):
         super(LambdaLayer, self).__init__()
@@ -17,29 +18,41 @@ class LambdaLayer(torch.nn.Module):
 class BasicBlock(torch.nn.Module):
     expansion = 1
 
-    def __init__(self, in_planes, planes, stride=1, option='A'):
+    def __init__(self, in_planes, planes, stride=1, option="A"):
         super(BasicBlock, self).__init__()
         self.conv1 = torch.nn.Conv2d(
-            in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+            in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False
+        )
         self.bn1 = torch.nn.BatchNorm2d(planes)
-        self.conv2 = torch.nn.Conv2d(planes, planes, kernel_size=3,
-                               stride=1, padding=1, bias=False)
+        self.conv2 = torch.nn.Conv2d(
+            planes, planes, kernel_size=3, stride=1, padding=1, bias=False
+        )
         self.bn2 = torch.nn.BatchNorm2d(planes)
 
         self.shortcut = torch.nn.Sequential()
         if stride != 1 or in_planes != planes:
-            if option == 'A':
+            if option == "A":
                 """
                 For CIFAR10 ResNet paper uses option A.
                 """
-                self.shortcut = LambdaLayer(lambda x:
-                                            torch.nn.functional.pad(x[:, :, ::2, ::2], (0, 0, 0, 0, planes // 4, planes // 4), "constant",
-                                                  0))
-            elif option == 'B':
+                self.shortcut = LambdaLayer(
+                    lambda x: torch.nn.functional.pad(
+                        x[:, :, ::2, ::2],
+                        (0, 0, 0, 0, planes // 4, planes // 4),
+                        "constant",
+                        0,
+                    )
+                )
+            elif option == "B":
                 self.shortcut = torch.nn.Sequential(
-                    torch.nn.Conv2d(in_planes, self.expansion * planes,
-                              kernel_size=1, stride=stride, bias=False),
-                    torch.nn.BatchNorm2d(self.expansion * planes)
+                    torch.nn.Conv2d(
+                        in_planes,
+                        self.expansion * planes,
+                        kernel_size=1,
+                        stride=stride,
+                        bias=False,
+                    ),
+                    torch.nn.BatchNorm2d(self.expansion * planes),
                 )
 
     def forward(self, x):
@@ -49,17 +62,23 @@ class BasicBlock(torch.nn.Module):
         out = torch.nn.functional.relu(out)
         return out
 
+
 class ResNet(torch.nn.Module):
     def __init__(self, block, num_blocks):
         super(ResNet, self).__init__()
         self.in_planes = 16
 
-        self.conv1 = torch.nn.Conv2d(1, self.in_planes, kernel_size=3,
-                               stride=1, padding=1, bias=False)
+        self.conv1 = torch.nn.Conv2d(
+            1, self.in_planes, kernel_size=3, stride=1, padding=1, bias=False
+        )
         self.bn1 = torch.nn.BatchNorm2d(self.in_planes)
         self.layer1 = self._make_layer(block, self.in_planes, num_blocks[0], stride=1)
-        self.layer2 = self._make_layer(block, self.in_planes * 2, num_blocks[1], stride=2)
-        self.layer3 = self._make_layer(block, self.in_planes * 2, num_blocks[2], stride=2)
+        self.layer2 = self._make_layer(
+            block, self.in_planes * 2, num_blocks[1], stride=2
+        )
+        self.layer3 = self._make_layer(
+            block, self.in_planes * 2, num_blocks[2], stride=2
+        )
         self.linear1 = torch.nn.Linear(self.in_planes, 26)
         self.linear2 = torch.nn.Linear(self.in_planes, 26)
         self.linear3 = torch.nn.Linear(self.in_planes, 26)
@@ -72,7 +91,7 @@ class ResNet(torch.nn.Module):
         strides = [stride] + [1] * (num_blocks - 1)
         layers = []
         for stride in strides:
-            layers.append(block(self.in_planes, planes, stride, option='B'))
+            layers.append(block(self.in_planes, planes, stride, option="B"))
             self.in_planes = planes * block.expansion
 
         return torch.nn.Sequential(*layers)
@@ -98,7 +117,6 @@ def resnet20():
     return ResNet(BasicBlock, [3, 3, 3])
 
 
-
 # 以下是训练代码
 import os
 from os import listdir, path
@@ -113,8 +131,8 @@ from torch.utils.data import Dataset, random_split, DataLoader
 
 
 # Train config
-USE_CUDA = False
-USE_MPS = True  # for Apple silicon devices
+USE_CUDA = False  # 是否使用英伟达®CUDA架构 GPU训练
+USE_MPS = False  # 是否使用 Apple Silicon 芯片
 TEST_FACTOR = 0.2
 # Hyper parameters
 start_epoch = 0
@@ -138,7 +156,8 @@ class CaptchaSet(Dataset):
     def _get_label_from_fn(fn):
         raw_label = fn.split("_")[0]
         labels = [ord(char) - ord("a") for char in raw_label]
-        if len(labels) == 4: labels.append(26)
+        if len(labels) == 4:
+            labels.append(26)
         return labels
 
     def __getitem__(self, idx):
@@ -171,7 +190,7 @@ def transfer_to_device(x):
 
 
 # Data pre-processing
-print('==> Preparing data..')
+print("==> Preparing data..")
 transform = transforms.ToTensor()
 
 dataset = CaptchaSet(root="labelled", transform=transform)
@@ -182,7 +201,7 @@ train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=True)
 
 # Model
-print('==> Building model..')
+print("==> Building model..")
 model = resnet20()
 model = transfer_to_device(model)
 
@@ -199,10 +218,10 @@ restore_model_path = None
 # restore_model_path = 'checkpoint/ckpt_0_acc_0.000000.pth'
 if restore_model_path:
     checkpoint = torch.load(restore_model_path)
-    model.load_state_dict(checkpoint['net'])
-    start_epoch = checkpoint['epoch'] + 1
-    optimizer.load_state_dict(checkpoint['optimizer'])
-    scheduler.load_state_dict(checkpoint['scheduler'])
+    model.load_state_dict(checkpoint["net"])
+    start_epoch = checkpoint["epoch"] + 1
+    optimizer.load_state_dict(checkpoint["optimizer"])
+    scheduler.load_state_dict(checkpoint["scheduler"])
 
 
 def tensor_to_captcha(tensors):
@@ -253,17 +272,28 @@ def train(epoch):
         batch_idx_last = batch_idx
 
         # Report statistics
-        print('Epoch [%d] Batch [%d/%d] Loss: %.3f | Traininig Acc: [Sentence] %.3f%% (%d/%d) [Char] %.3f%% (%d/%d)'
-              % (epoch, batch_idx + 1, len(train_loader), train_loss / (batch_idx + 1),
-                 100. * correct / total, correct, total, 100. * per_char_correct / per_char_total, per_char_correct,
-                 per_char_total))
+        print(
+            "Epoch [%d] Batch [%d/%d] Loss: %.3f | Traininig Acc: [Sentence] %.3f%% (%d/%d) [Char] %.3f%% (%d/%d)"
+            % (
+                epoch,
+                batch_idx + 1,
+                len(train_loader),
+                train_loss / (batch_idx + 1),
+                100.0 * correct / total,
+                correct,
+                total,
+                100.0 * per_char_correct / per_char_total,
+                per_char_correct,
+                per_char_total,
+            )
+        )
 
     # Return train_loss for lr_scheduler
     return train_loss / (batch_idx_last + 1)
 
 
 def test(epoch):
-    print('==> Testing...')
+    print("==> Testing...")
     model.eval()
     total = 0
     correct = 0
@@ -288,24 +318,24 @@ def test(epoch):
             correct += torch.all(predicted.eq(targets_stacked), 1).sum().item()
             per_char_total += targets[0].size(0) * 5
             per_char_correct += predicted.eq(targets_stacked).sum().item()
-        acc = 100. * correct / total
-        per_char_acc = 100. * per_char_correct / per_char_total
+        acc = 100.0 * correct / total
+        per_char_acc = 100.0 * per_char_correct / per_char_total
         ########################################
     # Save checkpoint.
-    print('Test Acc: [Sentence] %f [Char] %f' % (acc, per_char_acc))
-    print('Saving..')
+    print("Test Acc: [Sentence] %f [Char] %f" % (acc, per_char_acc))
+    print("Saving..")
     state = {
-        'net': model.state_dict(),
-        'scheduler': scheduler.state_dict(),
-        'optimizer': optimizer.state_dict(),
-        'acc': acc,
-        'epoch': epoch,
+        "net": model.state_dict(),
+        "scheduler": scheduler.state_dict(),
+        "optimizer": optimizer.state_dict(),
+        "acc": acc,
+        "epoch": epoch,
     }
-    if not os.path.isdir('checkpoint'):
-        os.mkdir('checkpoint')
-    torch.save(state, './checkpoint/ckpt_%d_acc_%f.pth' % (epoch, acc))
+    if not os.path.isdir("checkpoint"):
+        os.mkdir("checkpoint")
+    torch.save(state, "./checkpoint/ckpt_%d_acc_%f.pth" % (epoch, acc))
 
-    return './checkpoint/ckpt_%d_acc_%f.pth' % (epoch, acc)
+    return "./checkpoint/ckpt_%d_acc_%f.pth" % (epoch, acc)
 
 
 for epoch in range(start_epoch, end_epoch + 1):
