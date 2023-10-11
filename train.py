@@ -1,4 +1,13 @@
+import os
+from os import listdir, path
+from shutil import copyfile
+
 import torch
+import torch.nn as nn
+import torch.optim as optim
+import torchvision.transforms as transforms
+from PIL import Image
+from torch.utils.data import DataLoader, Dataset, random_split
 
 
 def _weights_init(m):
@@ -118,16 +127,6 @@ def resnet20():
 
 
 # 以下是训练代码
-import os
-from os import listdir, path
-from shutil import copyfile
-
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torchvision.transforms as transforms
-from PIL import Image
-from torch.utils.data import Dataset, random_split, DataLoader
 
 
 # Train config
