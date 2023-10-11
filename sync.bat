@@ -1,13 +1,14 @@
-::encoding: gbk
+ï»¿::encoding: utf8
 @echo off
+chcp 65001
 color 0F
 :pull
 git pull
 if %errorlevel% neq 0 goto pull
 :push
-echo ¡ª¡ª¡ª¡ªÀ­È¡Íê³É£¡Çë¼ì²éºÏ²¢³åÍ»ºó°´ÈÎÒâ¼üºÏ²¢£¡¡ª¡ª¡ª¡ª
+echo â€”â€”â€”â€”æ‹‰å–å®Œæˆï¼è¯·æ£€æŸ¥åˆå¹¶å†²çªåŽæŒ‰ä»»æ„é”®åˆå¹¶ï¼â€”â€”â€”â€”
 @pause
 git push
 if %errorlevel% neq 0 goto push
-echo ¡ª¡ª¡ª¡ªÀ­È¡Íê³É£¡°´ÈÎÒâ¼üÍË³ö¡ª¡ª¡ª¡ª
+echo â€”â€”â€”â€”æ‹‰å–å®Œæˆï¼æŒ‰ä»»æ„é”®é€€å‡ºâ€”â€”â€”â€”
 @pause
