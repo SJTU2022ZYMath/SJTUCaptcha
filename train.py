@@ -6,10 +6,9 @@ import torchvision.transforms
 import PIL.Image
 
 
-def _weights_init(m):
+def _weights_init(m):  # 这个函数 _weights_init 用于使用 Kaiming 正态初始化来初始化线性层和卷积层的权重。
     if isinstance(m, torch.nn.Linear) or isinstance(m, torch.nn.Conv2d):
         torch.nn.init.kaiming_normal_(m.weight)
-        # 这个函数 _weights_init 用于使用 Kaiming 正态初始化来初始化线性层和卷积层的权重。
 
 
 class LambdaLayer(
@@ -29,18 +28,23 @@ class BasicBlock(
     expansion = 1
 
     def __init__(self, in_planes, planes, stride=1, option="A"):
+        "输入一个模型的 in_planes, planes, stride=1, option='A'"
         super(BasicBlock, self).__init__()
         self.conv1 = torch.nn.Conv2d(
             in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False
-        )
-        self.bn1 = torch.nn.BatchNorm2d(planes)
+        )  # 第一个卷积层，　planes好像是输入的大小？不知道（悲）TODO
+        self.bn1 = torch.nn.BatchNorm2d(
+            planes
+        )  # https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html#torch.nn.BatchNorm2d
+        # 自己看吧，机翻：对 4D 输入（2D 输入的小批量）应用批量归一化 具有额外的通道维度）
+        # 其实就是批量归一化，归一化就是把数据转化到[-1,1]或[0,1]区间
         self.conv2 = torch.nn.Conv2d(
             planes, planes, kernel_size=3, stride=1, padding=1, bias=False
-        )
+        )  # 第二个卷积层，接归一化。planes好像是输入的大小？不知道（悲）TODO
         self.bn2 = torch.nn.BatchNorm2d(planes)
 
-        self.shortcut = torch.nn.Sequential()
-        if stride != 1 or in_planes != planes:
+        self.shortcut = torch.nn.Sequential()  # 这TM是啥？
+        if stride != 1 or in_planes != planes:  # 如果stride不是默认或者in_planes != planes
             if option == "A":
                 """
                 For CIFAR10 ResNet paper uses option A.
@@ -66,7 +70,7 @@ class BasicBlock(
                 )
 
     def forward(self, x):
-        out = torch.nn.functional.relu(self.bn1(self.conv1(x)))
+        out = torch.nn.functional.relu(self.bn1(self.conv1(x)))  # relu函数，终于能看懂一个了
         out = self.bn2(self.conv2(out))
         out += self.shortcut(x)
         out = torch.nn.functional.relu(out)
@@ -158,43 +162,50 @@ batch_size = 640  # 每次训练同时使用的数据条数。根据显卡内存
 
 class CaptchaSet(
     torch.utils.data.Dataset
-):  # CaptchaSet 是一个自定义 PyTorch 数据集类，用于加载和预处理验证码数据集。
+):  # CaptchaSet 是一个自定义 PyTorch 数据集类，用于加载和预处理验证码数据集。储存了一系列图片的文件名。
     def __init__(self, root, transform):
-        self._table = [0] * 156 + [1] * 100
+        self._table = [0] * 156 + [1] * 100  # [156个0,100个1]
         self.transform = transform
 
-        self.root = root
-        self.imgs = os.listdir(root)
+        self.root = root  # 图片所在文件夹
+        self.imgs = os.listdir(root)  # 图片文件路径列表(List)
 
-    @staticmethod
-    def _get_label_from_fn(fn):
+    @staticmethod  # 静态方法，不可以通过实例访问，直接使用<类名>.<方法>()调用
+    def _get_label_from_fn(fn):  # 将文件名"ansdl_1290.png"转化为分类结果"ansdl""
         raw_label = fn.split("_")[0]
         labels = [ord(char) - ord("a") for char in raw_label]
         if len(labels) == 4:
-            labels.append(26)
+            labels.append(26)  # 0~25代表a~z，26在末尾作为4为验证码的占位符
         return labels
 
-    def __getitem__(self, idx):
-        img = PIL.Image.open(os.path.join(self.root, self.imgs[idx])).convert("L")
-        img = img.point(self._table, "1")
+    def __getitem__(self, idx):  # 按索引，获取图片和分类
+        img = PIL.Image.open(os.path.join(self.root, self.imgs[idx])).convert(
+            "L"
+        )  # 读取图片，转化为 灰度值图片
+        img = img.point(
+            self._table, "1"
+        )  # 注意self._table的值[156个0,100个1]，相当于：0~155->0,156~255->1
+        # PIL.Image.point(self,list)相当于：对于每个像素点，作用：x=list[x]，如果是RBG则是……别的方法
+        # 如果是PIL.Image.point(self,func)函数则是x=func(x)
 
-        label = CaptchaSet._get_label_from_fn(self.imgs[idx])
+        label = CaptchaSet._get_label_from_fn(self.imgs[idx])  # 获取分类结果
 
         if self.transform:
-            img = self.transform(img)
+            img = self.transform(img)  # 不知道这个transform是干什么的
 
-        return img, label
+        return img, label  # 返回(图片,分类)对
 
     def __len__(self):
         return len(self.imgs)
 
 
-mps_device = None
 if USE_MPS:
     mps_device = torch.device("mps")
+else:
+    mps_device = None
 
 
-def transfer_to_device(x):
+def transfer_to_device(x):  # 切换设备……核显别看了
     if USE_CUDA:
         return x.cuda()
     elif mps_device is not None:
@@ -203,7 +214,7 @@ def transfer_to_device(x):
         return x
 
 
-# Data pre-processing
+# 预处理图像
 print("==> Preparing data..")
 transform = torchvision.transforms.ToTensor()  # 定义了诸如将图像转换为张量等转换。数据集被分成训练集和测试集。
 
@@ -316,7 +327,7 @@ def test(epoch):
     per_char_correct = 0
     per_char_total = 0
     with torch.no_grad():
-        ##### TODO: calc the test accuracy #####
+        ##### TODO: calc the test accuracy #####（TODO(画大饼的人):所画的大饼 是一种通用的python注释）
         # Hint: You do not have to update model parameters.
         #       Just get the outputs and count the correct predictions.
         #       You can turn to `train` function for help.

@@ -8,5 +8,5 @@ set error=%errorlevel%
 if %error% neq 0 echo 错误代码：%error%
 if %error% neq 0 echo.
 if %error% neq 0 goto pull
-echo ————拉取完成，请检查！————
+echo ————————拉取完成，请检查！————————
 pause
