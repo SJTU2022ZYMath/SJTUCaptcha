@@ -1,9 +1,9 @@
-import os
-import shutil  # shutil.copyfile
+import os  # 操作系统接口
+import shutil  # shutil.copyfile 只用了这个，复制功能
 
 import torch
 import torchvision.transforms
-import PIL.Image
+import PIL.Image  # 图片读取
 
 
 def _weights_init(m):  # 这个函数 _weights_init 用于使用 Kaiming 正态初始化来初始化线性层和卷积层的权重。
@@ -33,6 +33,8 @@ class BasicBlock(
         self.conv1 = torch.nn.Conv2d(
             in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False
         )  # 第一个卷积层，　planes好像是输入的大小？不知道（悲）TODO
+        # in_planes 是进入的通道数 ，planes是输出通道数
+        #
         self.bn1 = torch.nn.BatchNorm2d(
             planes
         )  # https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html#torch.nn.BatchNorm2d
@@ -70,8 +72,13 @@ class BasicBlock(
                 )
 
     def forward(self, x):
+        """
+        x => conv1 -> bn1 -> conv2 -> bn2
+                                       +  ------>relu ==> out
+        x  -----------------------> shortcut
+        """
         out = torch.nn.functional.relu(self.bn1(self.conv1(x)))  # relu函数，终于能看懂一个了
-        out = self.bn2(self.conv2(out))
+        out = self.bn2(self.conv2(out))  #
         out += self.shortcut(x)
         out = torch.nn.functional.relu(out)
         return out
@@ -134,15 +141,6 @@ def resnet20():
 
 
 # 以下是训练代码
-# import os
-# from os import listdir, path
-# from shutil import copyfile
-
-# import torch
-# import torch.nn as nn
-# import torch.optim as optim
-# import torchvision.transforms as transforms
-# from PIL import Image
 # from torch.utils.data import Dataset, random_split, DataLoader
 
 
