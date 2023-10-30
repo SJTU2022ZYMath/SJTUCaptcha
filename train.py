@@ -42,7 +42,7 @@ class BasicBlock(
         self.bn1 = torch.nn.BatchNorm2d(planes)
         # https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html#torch.nn.BatchNorm2d
         # 自己看吧，机翻：对 4D 输入（2D 输入的小批量）应用批量归一化 具有额外的通道维度）
-        # 其实就是批量归一化，归一化就是把数据转化到[-1,1]或[0,1]区间
+        # 其实就是归一化，归一化就是把数据转化到[-1,1]或[0,1]区间
         self.conv2 = torch.nn.Conv2d(
             planes, planes, kernel_size=3, stride=1, padding=1, bias=False
         )  # 第二个卷积层，接归一化。planes好像是输入的大小？不知道（悲）TODO
@@ -50,7 +50,7 @@ class BasicBlock(
 
         # shortcut 是补回来残差神经网络减掉的输入值
         self.shortcut = torch.nn.Sequential()  # 这TM是啥？
-        if stride != 1 or in_planes != planes:  # 如果stride不是默认或者in_planes != planes
+        if stride != 1 or in_planes != planes:  # 如果stride不是默认（1）或者in_planes != planes
             #
             if option == "A":
                 """
