@@ -3,6 +3,7 @@
 ::chcp 65001
 color 0F
 echo ————————请先使用pull.bat合并————————
+set input=n
 set /p input="是否拉取检查合并？（y：检查，n：不检查）"
 if /i %input% == y call pull.bat
 :pull
